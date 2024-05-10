@@ -33,7 +33,7 @@ def MatchSIFT(loc1, des1, loc2, des2):
     nn2 = NearestNeighbors(n_neighbors=2, algorithm='auto').fit(des2)
     
     # set the ratio threshold for the ratio test
-    ratio_threshold = 0.8
+    ratio_threshold = 0.9
     
     
     # Find the 2 nearest neighbors in image 2 for each keypoint in image 1
@@ -226,34 +226,36 @@ def BuildFeatureTrack(Im, K):
             #drop the last column to get the normalized coordinates
             x1 = x1[:, :2]
             x2 = x2[:, :2]
-            E, inlier_indices = EstimateE_RANSAC(x1, x2, 200, 0.01)
+            E, inlier_indices = EstimateE_RANSAC(x1, x2, 500, 0.01)
             feature_indices = ind1[inlier_indices] #get the feature indices which are considered as inliers
             
             #update the track_i so that the inliers are stored in the correct indices
             track_i[i, feature_indices, :] = x1[inlier_indices]
             track_i[j, feature_indices, :] = x2[inlier_indices]
 
-            # import matplotlib.pyplot as plt
-            # F = np.linalg.inv(K).T @ E @ np.linalg.inv(K)
-            # # Find epilines corresponding to points in right image (second image) and
-            # # drawing its lines on left image
-            # pt1 = np.int32(K @ np.vstack((x1[inlier_indices].T, np.ones(x1[inlier_indices].shape[0]))))
-            # pt2 = np.int32(K @ np.vstack((x2[inlier_indices].T, np.ones(x2[inlier_indices].shape[0]))))
-            # pt1 = pt1[:2].T
-            # pt2 = pt2[:2].T
-            # lines1 = cv2.computeCorrespondEpilines(pt2.reshape(-1,1,2), 2,F)
-            # # breakpoint()
-            # I = Im.copy()
-            # lines1 = lines1.reshape(-1,3)
-            # img5,img6 = drawlines(I[i],I[j],lines1,pt1,pt2)
-            # # Find epilines corresponding to points in left image (first image) and
-            # # drawing its lines on right image
-            # lines2 = cv2.computeCorrespondEpilines(pt1.reshape(-1,1,2), 1,F)
-            # lines2 = lines2.reshape(-1,3)
-            # img3,img4 = drawlines(I[j],I[i],lines2,pt2,pt1)
-            # plt.subplot(121),plt.imshow(img5)
-            # plt.subplot(122),plt.imshow(img3)
-            # plt.show()
+            import matplotlib.pyplot as plt
+            F = np.linalg.inv(K).T @ E @ np.linalg.inv(K)
+            # Find epilines corresponding to points in right image (second image) and
+            # drawing its lines on left image
+            pt1 = np.int32(K @ np.vstack((x1[inlier_indices].T, np.ones(x1[inlier_indices].shape[0]))))
+            pt2 = np.int32(K @ np.vstack((x2[inlier_indices].T, np.ones(x2[inlier_indices].shape[0]))))
+            pt1 = pt1[:2].T
+            pt2 = pt2[:2].T
+            lines1 = cv2.computeCorrespondEpilines(pt2.reshape(-1,1,2), 2,F)
+            # breakpoint()
+            I = Im.copy()
+            lines1 = lines1.reshape(-1,3)
+            img5,img6 = drawlines(I[i],I[j],lines1,pt1,pt2)
+            # Find epilines corresponding to points in left image (first image) and
+            # drawing its lines on right image
+            lines2 = cv2.computeCorrespondEpilines(pt1.reshape(-1,1,2), 1,F)
+            lines2 = lines2.reshape(-1,3)
+            img3,img4 = drawlines(I[j],I[i],lines2,pt2,pt1)
+            plt.subplot(121),plt.imshow(img5)
+            plt.title(f'epipolar line of image{i+1} for image {j+1}', fontsize=10), plt.xticks([]), plt.yticks([])
+            plt.subplot(122),plt.imshow(img3)
+            plt.title(f'epipolar line of image{j+1} for image {i+1}', fontsize=10), plt.xticks([]), plt.yticks([])
+            plt.savefig(f'epipolar_{i}_{j}.png')
         valid_feature_mask = np.sum(track_i[i], axis=-1) != -2 #check if the feature is matched in at least one 
         track_i = track_i[:, valid_feature_mask]
         print(f'Found {track_i.shape[1]} features in image {i+1}')
