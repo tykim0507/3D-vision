@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # Estimate ﬁrst two camera poses
     R, C, X = EstimateCameraPose(track1, track2)
     
-    output_dir = 'output'
+    output_dir = 'output1'
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     # print("camera 1, 2 initialized")
     # print("checking projection error")
     # check_proj_error(1, X, track, K, P)
-    ransac_n_iter = 200
+    ransac_n_iter = 500
     ransac_thr = 0.01
     for i in range(2, num_images):
         print(f"adding camera number {i+1}")
@@ -94,6 +94,7 @@ if __name__ == '__main__':
         R, C, inlier = PnP_RANSAC(X, track_i, ransac_n_iter, ransac_thr)
         inlier_idx = np.where(inlier)[0]
         # breakpoint()
+        print(f"number of inliers for camera{i+1}: {len(inlier_idx)}")
         R, C = PnP_nl(R, C, X[inlier_idx, :], track_i[inlier_idx, :])
 
         P[i] = np.hstack([R, -(R @ C).reshape((3, 1))])

@@ -33,7 +33,7 @@ def MatchSIFT(loc1, des1, loc2, des2):
     nn2 = NearestNeighbors(n_neighbors=2, algorithm='auto').fit(des2)
     
     # set the ratio threshold for the ratio test
-    ratio_threshold = 0.9
+    ratio_threshold = 0.8
     
     
     # Find the 2 nearest neighbors in image 2 for each keypoint in image 1
@@ -226,7 +226,7 @@ def BuildFeatureTrack(Im, K):
             #drop the last column to get the normalized coordinates
             x1 = x1[:, :2]
             x2 = x2[:, :2]
-            E, inlier_indices = EstimateE_RANSAC(x1, x2, 500, 0.01)
+            E, inlier_indices = EstimateE_RANSAC(x1, x2, 500, 0.001)
             feature_indices = ind1[inlier_indices] #get the feature indices which are considered as inliers
             
             #update the track_i so that the inliers are stored in the correct indices
@@ -255,7 +255,7 @@ def BuildFeatureTrack(Im, K):
             plt.title(f'epipolar line of image{i+1} for image {j+1}', fontsize=10), plt.xticks([]), plt.yticks([])
             plt.subplot(122),plt.imshow(img3)
             plt.title(f'epipolar line of image{j+1} for image {i+1}', fontsize=10), plt.xticks([]), plt.yticks([])
-            plt.savefig(f'epipolar_{i}_{j}.png')
+            plt.savefig(f'./epipolar_visualization/epipolar_{i}_{j}.png')
         valid_feature_mask = np.sum(track_i[i], axis=-1) != -2 #check if the feature is matched in at least one 
         track_i = track_i[:, valid_feature_mask]
         print(f'Found {track_i.shape[1]} features in image {i+1}')

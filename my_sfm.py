@@ -45,13 +45,13 @@ def check_proj_error(idx, X, track, K, P, inlier=None):
 if __name__ == '__main__':
     np.random.seed(100)
     K = np.asarray([
-        [558.08, 0, 327.88],
-        [0, 563.91, 182.02],
+        [716.70, 0, 481.27],
+        [0, 721.90, 362.52],
         [0, 0, 1]
     ])
-    num_images = 11
-    w_im = 640
-    h_im = 360
+    num_images = 13
+    w_im = 960
+    h_im = 720
 
     # Load input images
     Im = np.empty((num_images, h_im, w_im, 3), dtype=np.uint8)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     # print("camera 1, 2 initialized")
     # print("checking projection error")
     # check_proj_error(1, X, track, K, P)
-    ransac_n_iter = 500
+    ransac_n_iter = 200
     ransac_thr = 0.01
     for i in range(2, num_images):
         print(f"adding camera number {i+1}")
@@ -93,6 +93,7 @@ if __name__ == '__main__':
         
         R, C, inlier = PnP_RANSAC(X, track_i, ransac_n_iter, ransac_thr)
         inlier_idx = np.where(inlier)[0]
+        print(f"number of inliers for camera{i+1}: {len(inlier_idx)}")
         # breakpoint()
         R, C = PnP_nl(R, C, X[inlier_idx, :], track_i[inlier_idx, :])
 

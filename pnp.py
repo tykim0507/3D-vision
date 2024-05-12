@@ -33,7 +33,7 @@ def PnP(X, x):
         A[2*i+1] = [0, 0, 0, 0, X_i[0], X_i[1], X_i[2], 1, -x_i[1]*X_i[0], -x_i[1]*X_i[1], -x_i[1]*X_i[2], -x_i[1]]
 
     # Using SVD to solve AX = 0
-    U, S, Vt = np.linalg.svd(A)
+    _, _, Vt = np.linalg.svd(A)
     P = Vt[-1].reshape(3, 4)  # Reshape the last row of V to form P
 
     # Decompose P to get R and C
@@ -43,17 +43,14 @@ def PnP(X, x):
     # Ensure M is a rotation matrix by making it orthogonal
     U, S, Vt = np.linalg.svd(M)
     R = U @ Vt
+    R = R if np.linalg.det(R) > 0 else -R # check for det=-1
     
+    C = -R.T @ P[:, 3] / S[0]
     
-    # Camera center C can be found by -R.T @ t
-    t = C
-    t /= S[0]
-    C = -R.T @ t
-    
-    proj = (X - C[None]) @ R.T
-    sign = np.sign(proj[:, 2])
-    if np.sum(sign) < 0:
-        R, C = -R, -C
+    # proj = (X - C[None]) @ R.T
+    # sign = np.sign(proj[:, 2])
+    # if np.sum(sign) < 0:
+    #     R, C = -R, -C
     
 
     return R, C
